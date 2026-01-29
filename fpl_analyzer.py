@@ -29,8 +29,28 @@ class FPLAnalyzer:
         response.raise_for_status()
         self.team_data = response.json()
         
-        # Get current gameweek picks
-        current_gw = self.bootstrap_data['events'][0]['id'] if self.bootstrap_data['events'][0]['is_current'] else self.bootstrap_data['events'][1]['id']
+        # Find current or next gameweek
+        current_gw = None
+        for event in self.bootstrap_data['events']:
+            if event['is_current']:
+                current_gw = event['id']
+                break
+            elif event['is_next']:
+                current_gw = event['id']
+                break
+        
+        # If no current or next, use the last finished gameweek + 1
+        if current_gw is None:
+            for event in reversed(self.bootstrap_data['events']):
+                if event['finished']:
+                    current_gw = event['id'] + 1
+                    break
+        
+        # Fallback to gameweek 1 if nothing found
+        if current_gw is None:
+            current_gw = 1
+        
+        print(f"Fetching team data for Gameweek {current_gw}")
         picks_response = requests.get(f"{self.base_url}/entry/{self.team_id}/event/{current_gw}/picks/")
         picks_response.raise_for_status()
         self.team_picks = picks_response.json()
@@ -196,7 +216,10 @@ class FPLAnalyzer:
         self.fetch_team_data()
         self.fetch_fixtures()
         
-        print("Analyzing your team...")
+        print(f"Analyzing team: {self.team_data['name']}")
+        print(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
+        print(f"Team ID: {self.team_id}")
+        
         current_team = self.get_current_team()
         
         # Sort by score to identify weak links
@@ -205,8 +228,9 @@ class FPLAnalyzer:
         report = []
         report.append("# FPL WEEKLY ANALYSIS REPORT")
         report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        report.append(f"Team ID: {self.team_id}")
+        report.append(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
         report.append(f"Team: {self.team_data['name']}")
+        report.append(f"Team ID: {self.team_id}")
         report.append("")
         
         # Team value and transfers
