@@ -1,5 +1,5 @@
 # FPL WEEKLY ANALYSIS REPORT
-Generated: 2026-01-29 23:38:34
+Generated: 2026-01-30 09:33:13
 Manager: Suresh K
 Team: Invincibles 2
 Team ID: 8176746
@@ -61,15 +61,15 @@ Team ID: 8176746
 1. **Thiago** (Brentford) - £7.2m
    - Form: 7.0, PPG: 5.4, xP: 7.0
    - Fixtures: Aston Villa(A, FDR:3), Newcastle(A, FDR:4), Arsenal(H, FDR:4)
-   - Selected by: 37.0%
+   - Selected by: 36.9%
 2. **João Pedro** (Chelsea) - £7.2m
    - Form: 5.8, PPG: 4.5, xP: 5.8
    - Fixtures: West Ham(H, FDR:2), Wolves(A, FDR:2), Leeds(H, FDR:2)
-   - Selected by: 31.2%
+   - Selected by: 31.6%
 3. **Mané** (Wolves) - £4.5m
    - Form: 6.2, PPG: 3.2, xP: 6.2
    - Fixtures: Bournemouth(H, FDR:3), Chelsea(H, FDR:3), Nott'm Forest(A, FDR:3)
-   - Selected by: 1.5%
+   - Selected by: 1.6%
 
 ---
 
@@ -77,11 +77,11 @@ Team ID: 8176746
 
 - **Rice** (MID) - Arsenal - £7.4m
   Form: 6.0, Expected: 7.0, Fixtures: Leeds(A, FDR:3), Sunderland(H, FDR:2), Brentford(A, FDR:3)
-- **Wilson** (MID) - Fulham - £6.0m
+- **Wilson** (MID) - Fulham - £6.1m
   Form: 5.8, Expected: 5.8, Fixtures: Man Utd(A, FDR:3), Everton(H, FDR:2), Man City(A, FDR:4)
 - **Mukiele** (DEF) - Sunderland - £4.5m
   Form: 5.6, Expected: 5.6, Fixtures: Burnley(H, FDR:2), Arsenal(A, FDR:5), Liverpool(H, FDR:4)
-- **Chalobah** (DEF) - Chelsea - £5.6m
+- **Chalobah** (DEF) - Chelsea - £5.7m
   Form: 4.8, Expected: 4.8, Fixtures: West Ham(H, FDR:2), Wolves(A, FDR:2), Leeds(H, FDR:2)
 - **Semenyo** (MID) - Man City - £7.8m
   Form: 4.2, Expected: 4.7, Fixtures: Spurs(A, FDR:3), Liverpool(A, FDR:4), Fulham(H, FDR:2)
