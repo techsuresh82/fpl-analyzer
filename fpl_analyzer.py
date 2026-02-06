@@ -85,7 +85,7 @@ class FPLAnalyzer:
         upcoming_fixtures = []
         
         for fixture in self.fixtures_data:
-            if not fixture['finished']:
+            if not fixture['finished'] and fixture['event'] is not None:
                 if fixture['team_h'] == team_id:
                     upcoming_fixtures.append({
                         'opponent': self.get_team_name(fixture['team_a']),
@@ -102,7 +102,7 @@ class FPLAnalyzer:
                     })
         
         # Sort by gameweek and take next N fixtures
-        upcoming_fixtures.sort(key=lambda x: x['event'])
+        upcoming_fixtures.sort(key=lambda x: x['event'] if x['event'] is not None else 999)
         upcoming_fixtures = upcoming_fixtures[:num_fixtures]
         
         avg_difficulty = sum(f['difficulty'] for f in upcoming_fixtures) / len(upcoming_fixtures) if upcoming_fixtures else 0
