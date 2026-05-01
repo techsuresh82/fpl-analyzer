@@ -1,139 +1,120 @@
 # FPL WEEKLY ANALYSIS REPORT
-Generated: 2026-04-24 10:17:41
+Generated: 2026-05-01 10:18:57
 Manager: Suresh K
 Team: Invincibles 2
 Team ID: 8176746
 
 ## Team Status
-- Team Value: £100.7m
-- In Bank: £2.4m
+- Team Value: £99.5m
+- In Bank: £1.6m
 - Free Transfers: 1
 
 ## ⚠️ PLAYERS TO CONSIDER TRANSFERRING OUT
 
-### Pickford (GK) - Everton - £5.6m
-- Poor form (0.5)
-- Low expected points (0.5)
-- Next 3 fixtures: West Ham(A, FDR:2), Man City(H, FDR:4), Crystal Palace(A, FDR:3)
+### Solanke (FWD) - Spurs - £7.2m
+- **INJURED/UNAVAILABLE** - Muscle injury - 50% chance of playing
+- Doubt for next match (50% chance)
+- Poor form (1.7)
+- Low expected points (0.8)
+- Next 3 fixtures: Aston Villa(A, FDR:4), Leeds(H, FDR:2), Chelsea(A, FDR:3)
 
-**Suggested replacements (max £8.0m):**
-1. **Hermansen** (West Ham) - £4.2m
-   - Form: 6.5, PPG: 4.5, xP: 6.5
-   - Fixtures: Everton(H, FDR:3), Brentford(A, FDR:3), Arsenal(H, FDR:4)
-   - Selected by: 1.5%
-2. **Roefs** (Sunderland) - £4.8m
-   - Form: 6.0, PPG: 4.1, xP: 6.0
-   - Fixtures: Nott'm Forest(H, FDR:2), Wolves(A, FDR:2), Man Utd(H, FDR:3)
-   - Selected by: 9.4%
-3. **Lammens** (Man Utd) - £5.1m
-   - Form: 6.0, PPG: 3.3, xP: 6.5
-   - Fixtures: Brentford(H, FDR:3), Liverpool(H, FDR:3), Sunderland(A, FDR:3)
-   - Selected by: 3.4%
-
----
-
-### Dúbravka (GK) - Burnley - £4.0m
-- Poor form (2.0)
-- Low expected points (0.0)
-- Next 3 fixtures: Leeds(A, FDR:3), Aston Villa(H, FDR:3), Arsenal(A, FDR:5)
-
-**Suggested replacements (max £6.4m):**
-1. **Hermansen** (West Ham) - £4.2m
-   - Form: 6.5, PPG: 4.5, xP: 6.5
-   - Fixtures: Everton(H, FDR:3), Brentford(A, FDR:3), Arsenal(H, FDR:4)
-   - Selected by: 1.5%
-2. **Roefs** (Sunderland) - £4.8m
-   - Form: 6.0, PPG: 4.1, xP: 6.0
-   - Fixtures: Nott'm Forest(H, FDR:2), Wolves(A, FDR:2), Man Utd(H, FDR:3)
-   - Selected by: 9.4%
-3. **Lammens** (Man Utd) - £5.1m
-   - Form: 6.0, PPG: 3.3, xP: 6.5
-   - Fixtures: Brentford(H, FDR:3), Liverpool(H, FDR:3), Sunderland(A, FDR:3)
-   - Selected by: 3.4%
+**Suggested replacements (max £8.8m):**
+1. **Bowen** (West Ham) - £7.8m
+   - Form: 8.7, PPG: 5.0, xP: 8.7
+   - Fixtures: Brentford(A, FDR:3), Arsenal(H, FDR:4), Newcastle(A, FDR:3)
+   - Selected by: 15.0%
+2. **Igor Jesus** (Nott'm Forest) - £5.9m
+   - Form: 7.7, PPG: 3.2, xP: 7.7
+   - Fixtures: Chelsea(A, FDR:3), Newcastle(H, FDR:3), Man Utd(A, FDR:4)
+   - Selected by: 2.0%
+3. **Watkins** (Aston Villa) - £8.8m
+   - Form: 6.7, PPG: 3.9, xP: 6.7
+   - Fixtures: Spurs(H, FDR:3), Burnley(A, FDR:2), Liverpool(H, FDR:3)
+   - Selected by: 15.7%
 
 ---
 
-### João Pedro (FWD) - Chelsea - £7.6m
-- Poor form (0.7)
-- Low expected points (0.0)
-- Next 3 fixtures: Nott'm Forest(H, FDR:2), Liverpool(A, FDR:4), Spurs(H, FDR:2)
+### Acheampong (DEF) - Chelsea - £3.7m
+- Poor form (1.0)
+- Low expected points (1.0)
+- Next 3 fixtures: Nott'm Forest(H, FDR:3), Liverpool(A, FDR:4), Spurs(H, FDR:3)
 
-**Suggested replacements (max £10.0m):**
-1. **Watkins** (Aston Villa) - £8.7m
-   - Form: 9.0, PPG: 4.0, xP: 9.0
-   - Fixtures: Fulham(A, FDR:3), Spurs(H, FDR:2), Burnley(A, FDR:2)
-   - Selected by: 17.4%
-2. **Bowen** (West Ham) - £7.7m
-   - Form: 8.0, PPG: 4.8, xP: 8.0
-   - Fixtures: Everton(H, FDR:3), Brentford(A, FDR:3), Arsenal(H, FDR:4)
-   - Selected by: 16.6%
-3. **Thiago** (Brentford) - £7.4m
-   - Form: 7.5, PPG: 5.1, xP: 7.0
-   - Fixtures: Man Utd(A, FDR:4), West Ham(H, FDR:2), Man City(A, FDR:5)
-   - Selected by: 35.5%
-
----
-
-### Palmer (MID) - Chelsea - £10.5m
-- Poor form (2.0)
-- Low expected points (0.0)
-- Next 3 fixtures: Nott'm Forest(H, FDR:2), Liverpool(A, FDR:4), Spurs(H, FDR:2)
-
-**Suggested replacements (max £12.9m):**
-1. **Gibbs-White** (Nott'm Forest) - £7.5m
-   - Form: 11.0, PPG: 4.7, xP: 11.0
-   - Fixtures: Sunderland(A, FDR:3), Chelsea(A, FDR:3), Newcastle(H, FDR:3)
-   - Selected by: 10.5%
-2. **Dewsbury-Hall** (Everton) - £5.1m
-   - Form: 7.5, PPG: 5.1, xP: 7.5
-   - Fixtures: West Ham(A, FDR:2), Man City(H, FDR:4), Crystal Palace(A, FDR:3)
-   - Selected by: 6.1%
-3. **Casemiro** (Man Utd) - £5.7m
-   - Form: 7.0, PPG: 4.8, xP: 7.5
-   - Fixtures: Brentford(H, FDR:3), Liverpool(H, FDR:3), Sunderland(A, FDR:3)
-   - Selected by: 4.0%
+**Suggested replacements (max £5.3m):**
+1. **Mavropanos** (West Ham) - £4.5m
+   - Form: 10.3, PPG: 4.0, xP: 10.3
+   - Fixtures: Brentford(A, FDR:3), Arsenal(H, FDR:4), Newcastle(A, FDR:3)
+   - Selected by: 2.1%
+2. **O'Reilly** (Man City) - £5.2m
+   - Form: 9.0, PPG: 4.9, xP: 9.5
+   - Fixtures: Everton(A, FDR:3), Brentford(H, FDR:3), Crystal Palace(H, FDR:3)
+   - Selected by: 16.7%
+3. **Guéhi** (Man City) - £5.1m
+   - Form: 7.7, PPG: 5.1, xP: 8.2
+   - Fixtures: Everton(A, FDR:3), Brentford(H, FDR:3), Crystal Palace(H, FDR:3)
+   - Selected by: 32.8%
 
 ---
 
-### Semenyo (MID) - Man City - £8.2m
+### Woodman (GK) - Liverpool - £3.9m
+- Poor form (1.3)
+- Low expected points (1.3)
+- Next 3 fixtures: Man Utd(A, FDR:4), Chelsea(H, FDR:3), Aston Villa(A, FDR:4)
+
+**Suggested replacements (max £5.5m):**
+1. **Verbruggen** (Brighton) - £4.5m
+   - Form: 5.7, PPG: 3.5, xP: 6.2
+   - Fixtures: Newcastle(A, FDR:3), Wolves(H, FDR:1), Leeds(A, FDR:3)
+   - Selected by: 8.9%
+2. **Leno** (Fulham) - £4.9m
+   - Form: 6.3, PPG: 3.2, xP: 5.3
+   - Fixtures: Arsenal(A, FDR:5), Bournemouth(H, FDR:3), Wolves(A, FDR:2)
+   - Selected by: 1.9%
+3. **Hermansen** (West Ham) - £4.2m
+   - Form: 5.0, PPG: 4.3, xP: 5.0
+   - Fixtures: Brentford(A, FDR:3), Arsenal(H, FDR:4), Newcastle(A, FDR:3)
+   - Selected by: 0.8%
+
+---
+
+### Wilson (MID) - Fulham - £6.0m
 - Poor form (2.3)
-- Low expected points (0.0)
-- Next 3 fixtures: Everton(A, FDR:3), Brentford(H, FDR:3), Bournemouth(A, FDR:3)
+- Low expected points (1.3)
+- Next 3 fixtures: Arsenal(A, FDR:5), Bournemouth(H, FDR:3), Wolves(A, FDR:2)
 
-**Suggested replacements (max £10.6m):**
-1. **Gibbs-White** (Nott'm Forest) - £7.5m
-   - Form: 11.0, PPG: 4.7, xP: 11.0
-   - Fixtures: Sunderland(A, FDR:3), Chelsea(A, FDR:3), Newcastle(H, FDR:3)
-   - Selected by: 10.5%
-2. **Dewsbury-Hall** (Everton) - £5.1m
-   - Form: 7.5, PPG: 5.1, xP: 7.5
-   - Fixtures: West Ham(A, FDR:2), Man City(H, FDR:4), Crystal Palace(A, FDR:3)
-   - Selected by: 6.1%
-3. **Casemiro** (Man Utd) - £5.7m
-   - Form: 7.0, PPG: 4.8, xP: 7.5
-   - Fixtures: Brentford(H, FDR:3), Liverpool(H, FDR:3), Sunderland(A, FDR:3)
-   - Selected by: 4.0%
+**Suggested replacements (max £7.6m):**
+1. **Gibbs-White** (Nott'm Forest) - £7.6m
+   - Form: 11.7, PPG: 4.9, xP: 11.7
+   - Fixtures: Chelsea(A, FDR:3), Newcastle(H, FDR:3), Man Utd(A, FDR:4)
+   - Selected by: 11.8%
+2. **Casemiro** (Man Utd) - £5.8m
+   - Form: 8.7, PPG: 5.0, xP: 8.7
+   - Fixtures: Liverpool(H, FDR:3), Sunderland(A, FDR:3), Nott'm Forest(H, FDR:3)
+   - Selected by: 4.4%
+3. **Dewsbury-Hall** (Everton) - £5.2m
+   - Form: 7.7, PPG: 5.2, xP: 7.2
+   - Fixtures: Man City(H, FDR:4), Crystal Palace(A, FDR:3), Sunderland(H, FDR:2)
+   - Selected by: 6.0%
 
 ---
 
 ## 🌟 YOUR TOP PERFORMERS
 
-- **Thiago** (FWD) - Brentford - £7.4m
-  Form: 7.5, Expected: 7.0, Fixtures: Man Utd(A, FDR:4), West Ham(H, FDR:2), Man City(A, FDR:5)
-- **Okafor** (MID) - Leeds - £5.5m
-  Form: 10.3, Expected: 0.0, Fixtures: Burnley(H, FDR:1), Spurs(A, FDR:2), Brighton(H, FDR:3)
-- **N.Williams** (DEF) - Nott'm Forest - £4.8m
-  Form: 6.5, Expected: 6.5, Fixtures: Sunderland(A, FDR:3), Chelsea(A, FDR:3), Newcastle(H, FDR:3)
-- **Guéhi** (DEF) - Man City - £5.1m
-  Form: 7.7, Expected: 0.0, Fixtures: Everton(A, FDR:3), Brentford(H, FDR:3), Bournemouth(A, FDR:3)
-- **Heaven** (DEF) - Man Utd - £3.7m
-  Form: 5.5, Expected: 6.0, Fixtures: Brentford(H, FDR:3), Liverpool(H, FDR:3), Sunderland(A, FDR:3)
+- **O'Reilly** (DEF) - Man City - £5.2m
+  Form: 9.0, Expected: 9.5, Fixtures: Everton(A, FDR:3), Brentford(H, FDR:3), Crystal Palace(H, FDR:3)
+- **Bowen** (FWD) - West Ham - £7.8m
+  Form: 8.7, Expected: 8.7, Fixtures: Brentford(A, FDR:3), Arsenal(H, FDR:4), Newcastle(A, FDR:3)
+- **Dewsbury-Hall** (MID) - Everton - £5.2m
+  Form: 7.7, Expected: 7.2, Fixtures: Man City(H, FDR:4), Crystal Palace(A, FDR:3), Sunderland(H, FDR:2)
+- **Haaland** (FWD) - Man City - £14.6m
+  Form: 5.0, Expected: 5.5, Fixtures: Everton(A, FDR:3), Brentford(H, FDR:3), Crystal Palace(H, FDR:3)
+- **B.Fernandes** (MID) - Man Utd - £10.4m
+  Form: 5.0, Expected: 5.0, Fixtures: Liverpool(H, FDR:3), Sunderland(A, FDR:3), Nott'm Forest(H, FDR:3)
 
 ## 👑 CAPTAIN RECOMMENDATIONS
 
-1. **Thiago** - Expected: 7.0 points
-   Next fixture: Man Utd
-2. **N.Williams** - Expected: 6.5 points
-   Next fixture: Sunderland
-3. **Heaven** - Expected: 6.0 points
+1. **O'Reilly** - Expected: 9.5 points
+   Next fixture: Everton
+2. **Bowen** - Expected: 8.7 points
    Next fixture: Brentford
+3. **Dewsbury-Hall** - Expected: 7.2 points
+   Next fixture: Man City
