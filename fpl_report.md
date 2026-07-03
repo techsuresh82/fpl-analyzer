@@ -1,5 +1,5 @@
 # FPL WEEKLY ANALYSIS REPORT
-Generated: 2026-06-26 11:41:36
+Generated: 2026-07-03 11:27:38
 Manager: Suresh K
 Team: Invincibles 2
 Team ID: 8176746
