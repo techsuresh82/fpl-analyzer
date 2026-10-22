@@ -1,5 +1,5 @@
 # FPL WEEKLY ANALYSIS REPORT
-Generated: 2026-10-22 17:25:31
+Generated: 2026-10-22 17:38:23
 
 ## Team Overview
 | Team | Team ID | Value | Bank | Free transfers | Transfers used | Captain pick |
@@ -11,7 +11,7 @@ Generated: 2026-10-22 17:25:31
 ---
 
 # FPL WEEKLY ANALYSIS REPORT - Suresh's Invincibles
-Generated: 2026-10-22 17:25:29
+Generated: 2026-10-22 17:38:22
 Manager: Suresh K
 Team: Suresh's Invincibles
 Team ID: 7100718
@@ -166,7 +166,7 @@ xychart-beta
 - Favor low-net-cost moves and only do transfers that materially improve xP or fixture difficulty.
 - If the net cost is high, make sure the incoming player has stronger expected points and fixtures than the outgoing player.
 # FPL WEEKLY ANALYSIS REPORT - Frogs FC
-Generated: 2026-10-22 17:25:30
+Generated: 2026-10-22 17:38:23
 Manager: Sanvika Suresh
 Team: Frogs FC
 Team ID: 7194103
@@ -317,7 +317,7 @@ xychart-beta
 - Prioritize moves that improve xP without a transfer hit or with a small net cost.
 - If a player has poor fixtures or poor form, the best move is often a cheaper, higher-xP alternative in the same position.
 # FPL WEEKLY ANALYSIS REPORT - ro$a parks the buss
-Generated: 2026-10-22 17:25:31
+Generated: 2026-10-22 17:38:23
 Manager: Mikhail Leo
 Team: ro$a parks the buss
 Team ID: 8176746
