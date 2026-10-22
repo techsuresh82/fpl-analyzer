@@ -1,5 +1,5 @@
 # FPL WEEKLY ANALYSIS REPORT
-Generated: 2026-10-22 17:38:23
+Generated: 2026-10-22 17:54:49
 
 ## Team Overview
 | Team | Team ID | Value | Bank | Free transfers | Transfers used | Captain pick |
@@ -11,7 +11,7 @@ Generated: 2026-10-22 17:38:23
 ---
 
 # FPL WEEKLY ANALYSIS REPORT - Suresh's Invincibles
-Generated: 2026-10-22 17:38:22
+Generated: 2026-10-22 17:54:47
 Manager: Suresh K
 Team: Suresh's Invincibles
 Team ID: 7100718
@@ -166,7 +166,7 @@ xychart-beta
 - Favor low-net-cost moves and only do transfers that materially improve xP or fixture difficulty.
 - If the net cost is high, make sure the incoming player has stronger expected points and fixtures than the outgoing player.
 # FPL WEEKLY ANALYSIS REPORT - Frogs FC
-Generated: 2026-10-22 17:38:23
+Generated: 2026-10-22 17:54:48
 Manager: Sanvika Suresh
 Team: Frogs FC
 Team ID: 7194103
@@ -311,13 +311,22 @@ xychart-beta
 2. **Haaland** - Expected: 9.5 points | Next fixture: Aston Villa
 3. **Dewsbury-Hall** - Expected: 7.5 points | Next fixture: Arsenal
 
+## Best Single Transfer
+
+- OUT: Fernandes (MID)
+- IN: Henderson (MID)
+- Net cost: £-0.8m
+- Estimated transfer hit: £0.0m
+- Value score: 2.14 xP per £m
+- Reason: best low-risk, high-value move under your current transfer constraints
+
 ## Transfer Strategy
 
 - You have 1 free transfer(s) available this GW.
 - Prioritize moves that improve xP without a transfer hit or with a small net cost.
 - If a player has poor fixtures or poor form, the best move is often a cheaper, higher-xP alternative in the same position.
 # FPL WEEKLY ANALYSIS REPORT - ro$a parks the buss
-Generated: 2026-10-22 17:38:23
+Generated: 2026-10-22 17:54:49
 Manager: Mikhail Leo
 Team: ro$a parks the buss
 Team ID: 8176746
@@ -462,6 +471,15 @@ xychart-beta
 1. **Haaland** - Expected: 9.5 points | Next fixture: Aston Villa
 2. **João Pedro** - Expected: 7.0 points | Next fixture: Spurs
 3. **Groß** - Expected: 5.5 points | Next fixture: Liverpool
+
+## Best Single Transfer
+
+- OUT: Szoboszlai (MID)
+- IN: Henderson (MID)
+- Net cost: £-1.9m
+- Estimated transfer hit: £0.0m
+- Value score: 2.14 xP per £m
+- Reason: best low-risk, high-value move under your current transfer constraints
 
 ## Transfer Strategy
 
