@@ -1,162 +1,185 @@
 #!/usr/bin/env python3
 """
 FPL Team Analyzer - Weekly Transfer Recommendations
-Analyzes your FPL team based on form, fixtures, expected points, price trends, and injuries
+Analyzes FPL teams based on form, fixtures, expected points, price trends, and injuries.
+Supports multiple teams in one report and produces markdown tables/charts for easier reading.
 """
 
-import requests
-import json
+import os
 from datetime import datetime
-from collections import defaultdict
+
+import requests
+
 
 class FPLAnalyzer:
     def __init__(self, team_id):
-        self.team_id = team_id
+        self.team_id = str(team_id).strip()
         self.base_url = "https://fantasy.premierleague.com/api"
         self.bootstrap_data = None
         self.team_data = None
         self.fixtures_data = None
-        
+        self.team_picks = None
+
     def fetch_bootstrap_data(self):
-        """Fetch general FPL data including all players"""
+        """Fetch general FPL data including all players."""
         response = requests.get(f"{self.base_url}/bootstrap-static/")
         response.raise_for_status()
         self.bootstrap_data = response.json()
-        
+
     def fetch_team_data(self):
-        """Fetch user's team data"""
+        """Fetch user's team data and picks for the current gameweek."""
         response = requests.get(f"{self.base_url}/entry/{self.team_id}/")
         response.raise_for_status()
         self.team_data = response.json()
-        
-        # Find current or next gameweek
+
         current_gw = None
         for event in self.bootstrap_data['events']:
-            if event['is_current']:
+            if event.get('is_current'):
                 current_gw = event['id']
                 break
-            elif event['is_next']:
+            if event.get('is_next'):
                 current_gw = event['id']
                 break
-        
-        # If no current or next, use the last finished gameweek + 1
+
         if current_gw is None:
             for event in reversed(self.bootstrap_data['events']):
-                if event['finished']:
+                if event.get('finished'):
                     current_gw = event['id'] + 1
                     break
-        
-        # Fallback to gameweek 1 if nothing found
+
         if current_gw is None:
             current_gw = 1
-        
+
         print(f"Fetching team data for Gameweek {current_gw}")
         picks_response = requests.get(f"{self.base_url}/entry/{self.team_id}/event/{current_gw}/picks/")
         picks_response.raise_for_status()
         self.team_picks = picks_response.json()
-        
+
     def fetch_fixtures(self):
-        """Fetch upcoming fixtures"""
+        """Fetch upcoming fixtures."""
         response = requests.get(f"{self.base_url}/fixtures/")
         response.raise_for_status()
         self.fixtures_data = response.json()
-        
+
     def get_player_by_id(self, player_id):
-        """Get player details from bootstrap data"""
+        """Get player details from bootstrap data."""
         for player in self.bootstrap_data['elements']:
             if player['id'] == player_id:
                 return player
         return None
-    
+
     def get_team_name(self, team_id):
-        """Get team name from ID"""
+        """Get team name from ID."""
         for team in self.bootstrap_data['teams']:
             if team['id'] == team_id:
                 return team['name']
         return "Unknown"
-    
+
+    def get_position_name(self, element_type):
+        """Convert element type to position name."""
+        positions = {1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD'}
+        return positions.get(element_type, 'Unknown')
+
     def calculate_fixture_difficulty(self, player_id, num_fixtures=5):
-        """Calculate upcoming fixture difficulty for a player"""
+        """Calculate upcoming fixture difficulty for a player."""
         player = self.get_player_by_id(player_id)
         if not player:
             return 0, []
-        
+
         team_id = player['team']
         upcoming_fixtures = []
-        
+
         for fixture in self.fixtures_data:
-            if not fixture['finished'] and fixture['event'] is not None:
-                if fixture['team_h'] == team_id:
+            if not fixture.get('finished') and fixture.get('event') is not None:
+                if fixture.get('team_h') == team_id:
                     upcoming_fixtures.append({
-                        'opponent': self.get_team_name(fixture['team_a']),
-                        'difficulty': fixture['team_h_difficulty'],
+                        'opponent': self.get_team_name(fixture.get('team_a')),
+                        'difficulty': fixture.get('team_h_difficulty', 0),
                         'home': True,
-                        'event': fixture['event']
+                        'event': fixture.get('event')
                     })
-                elif fixture['team_a'] == team_id:
+                elif fixture.get('team_a') == team_id:
                     upcoming_fixtures.append({
-                        'opponent': self.get_team_name(fixture['team_h']),
-                        'difficulty': fixture['team_a_difficulty'],
+                        'opponent': self.get_team_name(fixture.get('team_h')),
+                        'difficulty': fixture.get('team_a_difficulty', 0),
                         'home': False,
-                        'event': fixture['event']
+                        'event': fixture.get('event')
                     })
-        
-        # Sort by gameweek and take next N fixtures
+
         upcoming_fixtures.sort(key=lambda x: x['event'] if x['event'] is not None else 999)
         upcoming_fixtures = upcoming_fixtures[:num_fixtures]
-        
+
         avg_difficulty = sum(f['difficulty'] for f in upcoming_fixtures) / len(upcoming_fixtures) if upcoming_fixtures else 0
-        
         return avg_difficulty, upcoming_fixtures
-    
+
+    @staticmethod
+    def format_money(value):
+        return f"£{float(value):.1f}m"
+
+    @staticmethod
+    def format_minus_plus(number):
+        return f"{number:+.1f}"
+
+    @staticmethod
+    def bar_chart(value, max_value=10, width=10, empty_char='░', fill_char='█'):
+        if max_value <= 0:
+            max_value = 1
+        normalized = max(0, min(1, float(value) / max_value))
+        filled = int(round(normalized * width))
+        return f"{fill_char * filled}{empty_char * (width - filled)}"
+
+    def format_fixtures(self, fixtures, limit=3):
+        """Format upcoming fixtures for markdown output."""
+        if not fixtures:
+            return "N/A"
+
+        parts = []
+        for fixture in fixtures[:limit]:
+            parts.append(f"{fixture['opponent']}({'H' if fixture['home'] else 'A'}, FDR:{fixture['difficulty']})")
+        return ", ".join(parts)
+
     def analyze_player(self, player_id):
-        """Comprehensive player analysis"""
+        """Comprehensive player analysis."""
         player = self.get_player_by_id(player_id)
         if not player:
             return None
-        
-        # Calculate metrics
-        form = float(player['form']) if player['form'] else 0
-        points_per_game = float(player['points_per_game']) if player['points_per_game'] else 0
-        expected_points = float(player['ep_next']) if player['ep_next'] else 0
-        price = player['now_cost'] / 10.0
-        price_change = player['cost_change_start'] / 10.0
-        selected_by = float(player['selected_by_percent'])
-        
-        # Injury/availability status
-        availability = player['status']
-        news = player['news']
-        chance_of_playing = player['chance_of_playing_next_round']
-        
-        # Fixture difficulty
+
+        form = float(player.get('form') or 0)
+        points_per_game = float(player.get('points_per_game') or 0)
+        expected_points = float(player.get('ep_next') or 0)
+        price = (player.get('now_cost') or 0) / 10.0
+        price_change = (player.get('cost_change_start') or 0) / 10.0
+        selected_by = float(player.get('selected_by_percent') or 0)
+
+        availability = player.get('status', 'a')
+        news = player.get('news', '')
+        chance_of_playing = player.get('chance_of_playing_next_round')
         avg_difficulty, fixtures = self.calculate_fixture_difficulty(player_id)
-        
-        # Calculate overall score (weighted)
+
         score = (
             form * 2.0 +
             points_per_game * 1.5 +
             expected_points * 1.0 +
-            (5 - avg_difficulty) * 0.5  # Lower difficulty is better
+            (5 - avg_difficulty) * 0.5
         )
-        
-        # Penalize if injured or doubtful
-        if availability != 'a':  # 'a' = available
+
+        if availability != 'a':
             score *= 0.5
         if chance_of_playing and chance_of_playing < 75:
             score *= 0.7
-        
+
         return {
             'id': player_id,
-            'name': player['web_name'],
-            'full_name': f"{player['first_name']} {player['second_name']}",
-            'team': self.get_team_name(player['team']),
-            'position': self.get_position_name(player['element_type']),
+            'name': player.get('web_name', 'Unknown'),
+            'full_name': f"{player.get('first_name', '')} {player.get('second_name', '')}".strip(),
+            'team': self.get_team_name(player.get('team')),
+            'position': self.get_position_name(player.get('element_type')),
             'price': price,
             'price_change': price_change,
             'form': form,
             'points_per_game': points_per_game,
             'expected_points_next': expected_points,
-            'total_points': player['total_points'],
+            'total_points': player.get('total_points', 0),
             'selected_by': selected_by,
             'availability': availability,
             'news': news,
@@ -165,191 +188,238 @@ class FPLAnalyzer:
             'upcoming_fixtures': fixtures,
             'score': score
         }
-    
-    def get_position_name(self, element_type):
-        """Convert element type to position name"""
-        positions = {1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD'}
-        return positions.get(element_type, 'Unknown')
-    
+
     def get_current_team(self):
-        """Get current team with analysis"""
+        """Get current team with analysis."""
         current_team = []
-        for pick in self.team_picks['picks']:
+        for pick in self.team_picks.get('picks', []):
             analysis = self.analyze_player(pick['element'])
             if analysis:
-                analysis['is_captain'] = pick['is_captain']
-                analysis['is_vice_captain'] = pick['is_vice_captain']
-                analysis['multiplier'] = pick['multiplier']
+                analysis['is_captain'] = pick.get('is_captain', False)
+                analysis['is_vice_captain'] = pick.get('is_vice_captain', False)
+                analysis['multiplier'] = pick.get('multiplier', 0)
                 current_team.append(analysis)
         return current_team
-    
+
     def find_transfer_targets(self, position=None, max_price=None):
-        """Find potential transfer targets"""
+        """Find potential transfer targets."""
         candidates = []
-        
+
         for player in self.bootstrap_data['elements']:
-            # Filter by position if specified
-            if position and self.get_position_name(player['element_type']) != position:
+            if position and self.get_position_name(player.get('element_type')) != position:
                 continue
-            
-            # Filter by price if specified
-            if max_price and player['now_cost'] / 10.0 > max_price:
+
+            if max_price and (player.get('now_cost') or 0) / 10.0 > max_price:
                 continue
-            
-            # Only consider available players
-            if player['status'] != 'a':
+
+            if player.get('status') != 'a':
                 continue
-            
+
             analysis = self.analyze_player(player['id'])
             if analysis:
                 candidates.append(analysis)
-        
-        # Sort by score (best first)
+
         candidates.sort(key=lambda x: x['score'], reverse=True)
-        
-        return candidates[:20]  # Top 20 candidates
-    
+        return candidates[:20]
+
     def generate_recommendations(self):
-        """Generate transfer recommendations"""
+        """Generate transfer recommendations for one team."""
         print("Fetching FPL data...")
         self.fetch_bootstrap_data()
         self.fetch_team_data()
         self.fetch_fixtures()
-        
+
         print(f"Analyzing team: {self.team_data['name']}")
         print(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
         print(f"Team ID: {self.team_id}")
-        
+
         current_team = self.get_current_team()
-        
-        # Sort by score to identify weak links
         current_team.sort(key=lambda x: x['score'])
-        
+
         report = []
-        report.append("# FPL WEEKLY ANALYSIS REPORT")
+        report.append(f"# FPL WEEKLY ANALYSIS REPORT - {self.team_data['name']}")
         report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report.append(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
         report.append(f"Team: {self.team_data['name']}")
         report.append(f"Team ID: {self.team_id}")
         report.append("")
-        
-        # Team value and transfers
+
         report.append("## Team Status")
-        report.append(f"- Team Value: £{self.team_data['last_deadline_value'] / 10.0:.1f}m")
-        report.append(f"- In Bank: £{self.team_data['last_deadline_bank'] / 10.0:.1f}m")
-        report.append(f"- Free Transfers: {self.team_picks['entry_history']['event_transfers_cost'] == 0 and 1 or 0}")
+        report.append(f"- Team Value: {self.format_money(self.team_data.get('last_deadline_value', 0) / 10.0)}")
+        report.append(f"- In Bank: {self.format_money(self.team_data.get('last_deadline_bank', 0) / 10.0)}")
+        entry_history = self.team_picks.get('entry_history', {}) if self.team_picks else {}
+        report.append(f"- Transfers used this GW: {entry_history.get('event_transfers', 0)}")
+        report.append(f"- Transfer cost: {entry_history.get('event_transfers_cost', 0)}")
         report.append("")
-        
-        # Identify problem players
-        report.append("## ⚠️ PLAYERS TO CONSIDER TRANSFERRING OUT")
+
+        report.append("## Risk Snapshot")
         report.append("")
-        
+        report.append("| Player | Pos | Form | xP | FDR | Risk | Trend |")
+        report.append("|--------|-----|------|----|-----|------|-------|")
+
+        for player in current_team[:8]:
+            risk = "Low"
+            if player['availability'] != 'a' or (player['chance_of_playing'] and player['chance_of_playing'] < 75):
+                risk = "High"
+            elif player['avg_fixture_difficulty'] > 3.5 or player['form'] < 3.0:
+                risk = "Medium"
+
+            form_bar = self.bar_chart(player['form'], max_value=10, width=10)
+            report.append(
+                f"| {player['name']} | {player['position']} | {player['form']:.1f} {form_bar} | "
+                f"{player['expected_points_next']:.1f} | {player['avg_fixture_difficulty']:.1f} | {risk} | "
+                f"{self.format_minus_plus(player['price_change'])} |"
+            )
+
+        report.append("")
+
+        report.append("## ⚠️ Players to Consider Transferring Out")
+        report.append("")
+
         problem_players = []
-        for player in current_team[:5]:  # Bottom 5 by score
+        for player in current_team[:5]:
             issues = []
-            
+
             if player['availability'] != 'a':
                 issues.append(f"**INJURED/UNAVAILABLE** - {player['news']}")
-            
+
             if player['chance_of_playing'] and player['chance_of_playing'] < 75:
                 issues.append(f"Doubt for next match ({player['chance_of_playing']}% chance)")
-            
+
             if player['form'] < 3.0:
                 issues.append(f"Poor form ({player['form']})")
-            
+
             if player['avg_fixture_difficulty'] > 3.5:
                 issues.append(f"Difficult fixtures (avg difficulty: {player['avg_fixture_difficulty']:.1f})")
-            
+
             if player['expected_points_next'] < 2.0:
                 issues.append(f"Low expected points ({player['expected_points_next']:.1f})")
-            
+
             if issues:
                 problem_players.append((player, issues))
-        
-        for player, issues in problem_players:
-            report.append(f"### {player['name']} ({player['position']}) - {player['team']} - £{player['price']:.1f}m")
-            for issue in issues:
-                report.append(f"- {issue}")
-            
-            # Show upcoming fixtures
-            fixtures_str = ", ".join([
-                f"{f['opponent']}({'H' if f['home'] else 'A'}, FDR:{f['difficulty']})"
-                for f in player['upcoming_fixtures'][:3]
-            ])
-            report.append(f"- Next 3 fixtures: {fixtures_str}")
-            report.append("")
-            
-            # Find replacement suggestions
-            available_budget = player['price'] + (self.team_data['last_deadline_bank'] / 10.0)
-            targets = self.find_transfer_targets(position=player['position'], max_price=available_budget)
-            
-            report.append(f"**Suggested replacements (max £{available_budget:.1f}m):**")
-            for i, target in enumerate(targets[:3], 1):
-                fixtures_str = ", ".join([
-                    f"{f['opponent']}({'H' if f['home'] else 'A'}, FDR:{f['difficulty']})"
-                    for f in target['upcoming_fixtures'][:3]
-                ])
-                report.append(f"{i}. **{target['name']}** ({target['team']}) - £{target['price']:.1f}m")
-                report.append(f"   - Form: {target['form']}, PPG: {target['points_per_game']}, xP: {target['expected_points_next']:.1f}")
-                report.append(f"   - Fixtures: {fixtures_str}")
-                report.append(f"   - Selected by: {target['selected_by']:.1f}%")
-            
-            report.append("")
-            report.append("---")
-            report.append("")
-        
+
         if not problem_players:
             report.append("✅ No immediate concerns with your team!")
             report.append("")
-        
-        # Top performers
-        report.append("## 🌟 YOUR TOP PERFORMERS")
+        else:
+            for player, issues in problem_players:
+                report.append(f"### {player['name']} ({player['position']}) - {player['team']} - £{player['price']:.1f}m")
+                for issue in issues:
+                    report.append(f"- {issue}")
+
+                report.append(f"- Next 3 fixtures: {self.format_fixtures(player['upcoming_fixtures'])}")
+                report.append("")
+
+                available_budget = player['price'] + (self.team_data.get('last_deadline_bank', 0) / 10.0)
+                targets = self.find_transfer_targets(position=player['position'], max_price=available_budget)
+
+                report.append(f"**Suggested replacements (max {self.format_money(available_budget)}):**")
+                report.append("| Replacement | Team | Price | Form | xP | Fixtures |")
+                report.append("|-------------|------|-------|------|----|----------|")
+
+                for target in targets[:3]:
+                    report.append(
+                        f"| {target['name']} | {target['team']} | {self.format_money(target['price'])} | "
+                        f"{target['form']:.1f} | {target['expected_points_next']:.1f} | {self.format_fixtures(target['upcoming_fixtures'])} |"
+                    )
+
+                report.append("")
+                report.append("---")
+                report.append("")
+
+        report.append("## 🌟 Your Top Performers")
         report.append("")
+        report.append("| Player | Pos | Team | Form | xP | Fixtures |")
+        report.append("|--------|-----|------|------|----|----------|")
         top_players = sorted(current_team, key=lambda x: x['score'], reverse=True)[:5]
         for player in top_players:
-            fixtures_str = ", ".join([
-                f"{f['opponent']}({'H' if f['home'] else 'A'}, FDR:{f['difficulty']})"
-                for f in player['upcoming_fixtures'][:3]
-            ])
-            report.append(f"- **{player['name']}** ({player['position']}) - {player['team']} - £{player['price']:.1f}m")
-            report.append(f"  Form: {player['form']}, Expected: {player['expected_points_next']:.1f}, Fixtures: {fixtures_str}")
-        
+            report.append(
+                f"| {player['name']} | {player['position']} | {player['team']} | {player['form']:.1f} | "
+                f"{player['expected_points_next']:.1f} | {self.format_fixtures(player['upcoming_fixtures'])} |"
+            )
+
         report.append("")
-        
-        # Captain recommendations
-        report.append("## 👑 CAPTAIN RECOMMENDATIONS")
+
+        report.append("## 👑 Captain Recommendations")
         report.append("")
         captain_candidates = sorted(current_team, key=lambda x: x['expected_points_next'], reverse=True)[:3]
         for i, player in enumerate(captain_candidates, 1):
-            report.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points")
-            report.append(f"   Next fixture: {player['upcoming_fixtures'][0]['opponent'] if player['upcoming_fixtures'] else 'N/A'}")
-        
+            fixture_label = player['upcoming_fixtures'][0]['opponent'] if player['upcoming_fixtures'] else 'N/A'
+            report.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points | Next fixture: {fixture_label}")
+
         return "\n".join(report)
 
 
+def get_team_ids_from_env():
+    """Support both a single legacy FPL_TEAM_ID and a comma-separated FPL_TEAM_IDS list."""
+    team_ids = []
+
+    multi = os.environ.get('FPL_TEAM_IDS', '').strip()
+    if multi:
+        team_ids.extend([team_id.strip() for team_id in multi.split(',') if team_id.strip()])
+
+    legacy = os.environ.get('FPL_TEAM_ID', '').strip()
+    if legacy and legacy not in team_ids:
+        team_ids.append(legacy)
+
+    return team_ids
+
+
+def build_combined_report(team_ids):
+    """Build a single report across multiple teams."""
+    summary_rows = []
+    sections = []
+
+    for team_id in team_ids:
+        analyzer = FPLAnalyzer(team_id)
+        analyzer.fetch_bootstrap_data()
+        analyzer.fetch_team_data()
+        analyzer.fetch_fixtures()
+        report = analyzer.generate_recommendations()
+
+        team_name = analyzer.team_data.get('name', f'Team {team_id}') if analyzer.team_data else f'Team {team_id}'
+        value = (analyzer.team_data.get('last_deadline_value', 0) / 10.0) if analyzer.team_data else 0
+        bank = (analyzer.team_data.get('last_deadline_bank', 0) / 10.0) if analyzer.team_data else 0
+        transfers_used = analyzer.team_picks.get('entry_history', {}).get('event_transfers', 0) if analyzer.team_picks else 0
+
+        summary_rows.append(f"| {team_name} | {team_id} | {value:.1f}m | {bank:.1f}m | {transfers_used} |")
+        sections.append(report)
+
+    summary = [
+        "# FPL WEEKLY ANALYSIS REPORT",
+        f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "",
+        "## Team Overview",
+        "| Team | Team ID | Value | Bank | Transfers used |",
+        "|------|---------|-------|------|----------------|",
+    ]
+    summary.extend(summary_rows)
+    summary.extend(["", "---", ""])
+    return "\n".join(summary + sections)
+
+
 def main():
-    import os
-    
-    # Get team ID from environment variable or use default
-    team_id = os.environ.get('FPL_TEAM_ID')
-    
-    if not team_id:
-        print("Error: FPL_TEAM_ID environment variable not set")
+    team_ids = get_team_ids_from_env()
+
+    if not team_ids:
+        print("Error: FPL_TEAM_ID or FPL_TEAM_IDS environment variable not set")
         print("Please set it in your GitHub repository secrets")
         return
-    
+
     try:
-        analyzer = FPLAnalyzer(team_id)
-        report = analyzer.generate_recommendations()
-        
-        # Save report
+        if len(team_ids) == 1:
+            analyzer = FPLAnalyzer(team_ids[0])
+            report = analyzer.generate_recommendations()
+        else:
+            report = build_combined_report(team_ids)
+
         with open('fpl_report.md', 'w') as f:
             f.write(report)
-        
+
         print("Report generated successfully!")
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print(report)
-        
+
     except Exception as e:
         print(f"Error: {e}")
         raise
