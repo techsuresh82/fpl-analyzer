@@ -2,7 +2,7 @@
 """
 FPL Team Analyzer - Weekly Transfer Recommendations
 Analyzes FPL teams based on form, fixtures, expected points, price trends, and injuries.
-Supports multiple teams in one report and produces markdown tables/charts for easier reading.
+Supports multiple teams in one report and produces markdown tables and Mermaid charts.
 """
 
 import os
@@ -108,35 +108,44 @@ class FPLAnalyzer:
 
         upcoming_fixtures.sort(key=lambda x: x['event'] if x['event'] is not None else 999)
         upcoming_fixtures = upcoming_fixtures[:num_fixtures]
-
         avg_difficulty = sum(f['difficulty'] for f in upcoming_fixtures) / len(upcoming_fixtures) if upcoming_fixtures else 0
         return avg_difficulty, upcoming_fixtures
 
     @staticmethod
-    def format_money(value):
+    def money(value):
         return f"£{float(value):.1f}m"
 
     @staticmethod
-    def format_minus_plus(number):
-        return f"{number:+.1f}"
+    def signed(value):
+        return f"{value:+.1f}"
 
     @staticmethod
-    def bar_chart(value, max_value=10, width=10, empty_char='░', fill_char='█'):
+    def mini_bar(value, max_value=10, width=10, fill='█', empty='░'):
         if max_value <= 0:
             max_value = 1
-        normalized = max(0, min(1, float(value) / max_value))
-        filled = int(round(normalized * width))
-        return f"{fill_char * filled}{empty_char * (width - filled)}"
+        ratio = max(0, min(1, float(value) / max_value))
+        filled = int(ratio * width)
+        return f"{fill * filled}{empty * (width - filled)}"
+
+    def get_free_transfers_available(self):
+        """Return how many free transfers are available and transfer cost already used."""
+        history = self.team_picks.get('entry_history', {}) if self.team_picks else {}
+        transfers_used = int(history.get('event_transfers', 0) or 0)
+        transfer_cost = int(history.get('event_transfers_cost', 0) or 0)
+
+        # Standard FPL logic: the first transfer is usually free each GW.
+        free_transfers = max(0, 1 - transfers_used)
+        if free_transfers == 0 and transfer_cost == 0 and transfers_used == 0:
+            free_transfers = 1
+        return free_transfers, transfers_used, transfer_cost
 
     def format_fixtures(self, fixtures, limit=3):
-        """Format upcoming fixtures for markdown output."""
         if not fixtures:
             return "N/A"
-
-        parts = []
+        pieces = []
         for fixture in fixtures[:limit]:
-            parts.append(f"{fixture['opponent']}({'H' if fixture['home'] else 'A'}, FDR:{fixture['difficulty']})")
-        return ", ".join(parts)
+            pieces.append(f"{fixture['opponent']}({'H' if fixture['home'] else 'A'}, FDR:{fixture['difficulty']})")
+        return ", ".join(pieces)
 
     def analyze_player(self, player_id):
         """Comprehensive player analysis."""
@@ -186,7 +195,8 @@ class FPLAnalyzer:
             'chance_of_playing': chance_of_playing,
             'avg_fixture_difficulty': avg_difficulty,
             'upcoming_fixtures': fixtures,
-            'score': score
+            'score': score,
+            'xp_per_m': (expected_points / price) if price > 0 else 0,
         }
 
     def get_current_team(self):
@@ -222,8 +232,39 @@ class FPLAnalyzer:
         candidates.sort(key=lambda x: x['score'], reverse=True)
         return candidates[:20]
 
+    def build_transfer_recommendation(self, player, free_transfers):
+        """Create one transfer suggestion for a problem player, considering free transfers and value."""
+        budget = player['price'] + (self.team_data.get('last_deadline_bank', 0) / 10.0)
+        targets = self.find_transfer_targets(position=player['position'], max_price=budget)
+        if not targets:
+            return None
+
+        ranked = []
+        for target in targets[:10]:
+            net_cost = target['price'] - player['price']
+            if free_transfers > 0:
+                transfer_cost = 0.0
+                cost_penalty = 0.0
+            else:
+                transfer_cost = max(0.0, net_cost)
+                cost_penalty = transfer_cost * 0.8
+
+            value_score = (target['expected_points_next'] / target['price']) if target['price'] > 0 else 0
+            total_score = target['score'] + (value_score * 10) - cost_penalty
+            ranked.append({
+                'target': target,
+                'net_cost': net_cost,
+                'transfer_cost': transfer_cost,
+                'value_score': value_score,
+                'total_score': total_score,
+            })
+
+        ranked.sort(key=lambda x: x['total_score'], reverse=True)
+        best = ranked[0]
+        return best
+
     def generate_recommendations(self):
-        """Generate transfer recommendations for one team."""
+        """Generate transfer recommendations and a markdown report."""
         print("Fetching FPL data...")
         self.fetch_bootstrap_data()
         self.fetch_team_data()
@@ -235,6 +276,21 @@ class FPLAnalyzer:
 
         current_team = self.get_current_team()
         current_team.sort(key=lambda x: x['score'])
+        free_transfers, transfers_used, transfer_cost = self.get_free_transfers_available()
+
+        risk_counts = {'Low': 0, 'Medium': 0, 'High': 0}
+        top_captains = []
+        for player in current_team:
+            if player['availability'] != 'a' or (player['chance_of_playing'] and player['chance_of_playing'] < 75):
+                risk = 'High'
+            elif player['avg_fixture_difficulty'] > 3.5 or player['form'] < 3.0:
+                risk = 'Medium'
+            else:
+                risk = 'Low'
+            risk_counts[risk] += 1
+
+        for player in sorted(current_team, key=lambda x: x['expected_points_next'], reverse=True)[:3]:
+            top_captains.append(player)
 
         report = []
         report.append(f"# FPL WEEKLY ANALYSIS REPORT - {self.team_data['name']}")
@@ -244,57 +300,70 @@ class FPLAnalyzer:
         report.append(f"Team ID: {self.team_id}")
         report.append("")
 
-        report.append("## Team Status")
-        report.append(f"- Team Value: {self.format_money(self.team_data.get('last_deadline_value', 0) / 10.0)}")
-        report.append(f"- In Bank: {self.format_money(self.team_data.get('last_deadline_bank', 0) / 10.0)}")
-        entry_history = self.team_picks.get('entry_history', {}) if self.team_picks else {}
-        report.append(f"- Transfers used this GW: {entry_history.get('event_transfers', 0)}")
-        report.append(f"- Transfer cost: {entry_history.get('event_transfers_cost', 0)}")
+        report.append("## Summary")
+        report.append("")
+        report.append("| Team | Value | Bank | Free transfers | Transfers used | Captain pick |")
+        report.append("|------|-------|------|----------------|----------------|--------------|")
+        report.append(
+            f"| {self.team_data['name']} | {self.money(self.team_data.get('last_deadline_value', 0) / 10.0)} | "
+            f"{self.money(self.team_data.get('last_deadline_bank', 0) / 10.0)} | {free_transfers} | "
+            f"{transfers_used} | {top_captains[0]['name'] if top_captains else 'N/A'} |"
+        )
         report.append("")
 
         report.append("## Risk Snapshot")
         report.append("")
-        report.append("| Player | Pos | Form | xP | FDR | Risk | Trend |")
-        report.append("|--------|-----|------|----|-----|------|-------|")
+        report.append("```mermaid")
+        report.append("pie title Team Risk Distribution")
+        report.append(f"    \"Low\" : {risk_counts['Low']}")
+        report.append(f"    \"Medium\" : {risk_counts['Medium']}")
+        report.append(f"    \"High\" : {risk_counts['High']}")
+        report.append("```")
+        report.append("")
 
+        report.append("## Captaincy Comparison")
+        report.append("")
+        report.append("```mermaid")
+        report.append("xychart-beta")
+        report.append("    title Expected Points Next GW")
+        report.append("    x-axis [" + ", ".join([p['name'] for p in top_captains]) + "]")
+        report.append("    y-axis \"Expected xP\" 0 --> 12")
+        report.append("    bar [" + ", ".join([f"{p['expected_points_next']:.1f}" for p in top_captains]) + "]")
+        report.append("```")
+        report.append("")
+
+        report.append("## Risk Table")
+        report.append("")
+        report.append("| Player | Pos | Form | xP | FDR | Risk | Cost |")
+        report.append("|--------|-----|------|----|-----|------|------|")
         for player in current_team[:8]:
-            risk = "Low"
             if player['availability'] != 'a' or (player['chance_of_playing'] and player['chance_of_playing'] < 75):
-                risk = "High"
+                risk = 'High'
             elif player['avg_fixture_difficulty'] > 3.5 or player['form'] < 3.0:
-                risk = "Medium"
-
-            form_bar = self.bar_chart(player['form'], max_value=10, width=10)
+                risk = 'Medium'
+            else:
+                risk = 'Low'
             report.append(
-                f"| {player['name']} | {player['position']} | {player['form']:.1f} {form_bar} | "
-                f"{player['expected_points_next']:.1f} | {player['avg_fixture_difficulty']:.1f} | {risk} | "
-                f"{self.format_minus_plus(player['price_change'])} |"
+                f"| {player['name']} | {player['position']} | {player['form']:.1f} {self.mini_bar(player['form'], max_value=10, width=8)} | "
+                f"{player['expected_points_next']:.1f} | {player['avg_fixture_difficulty']:.1f} | {risk} | {self.money(player['price'])} |"
             )
-
         report.append("")
 
         report.append("## ⚠️ Players to Consider Transferring Out")
         report.append("")
-
         problem_players = []
         for player in current_team[:5]:
             issues = []
-
             if player['availability'] != 'a':
                 issues.append(f"**INJURED/UNAVAILABLE** - {player['news']}")
-
             if player['chance_of_playing'] and player['chance_of_playing'] < 75:
                 issues.append(f"Doubt for next match ({player['chance_of_playing']}% chance)")
-
             if player['form'] < 3.0:
                 issues.append(f"Poor form ({player['form']})")
-
             if player['avg_fixture_difficulty'] > 3.5:
                 issues.append(f"Difficult fixtures (avg difficulty: {player['avg_fixture_difficulty']:.1f})")
-
             if player['expected_points_next'] < 2.0:
                 issues.append(f"Low expected points ({player['expected_points_next']:.1f})")
-
             if issues:
                 problem_players.append((player, issues))
 
@@ -303,49 +372,67 @@ class FPLAnalyzer:
             report.append("")
         else:
             for player, issues in problem_players:
-                report.append(f"### {player['name']} ({player['position']}) - {player['team']} - £{player['price']:.1f}m")
+                transfer_pick = self.build_transfer_recommendation(player, free_transfers)
+                target = transfer_pick['target'] if transfer_pick else None
+                net_cost = transfer_pick['net_cost'] if transfer_pick else 0
+                transfer_cost = transfer_pick['transfer_cost'] if transfer_pick else 0
+                value_score = transfer_pick['value_score'] if transfer_pick else 0
+
+                report.append(f"### {player['name']} ({player['position']}) - {player['team']} - {self.money(player['price'])}")
                 for issue in issues:
                     report.append(f"- {issue}")
-
                 report.append(f"- Next 3 fixtures: {self.format_fixtures(player['upcoming_fixtures'])}")
-                report.append("")
+                report.append(f"- Free transfers available: {free_transfers}")
+                report.append(f"- Suggested move: {player['name']} OUT -> {target['name']} IN") if target else report.append("- Suggested move: no suitable replacement in budget")
 
-                available_budget = player['price'] + (self.team_data.get('last_deadline_bank', 0) / 10.0)
-                targets = self.find_transfer_targets(position=player['position'], max_price=available_budget)
-
-                report.append(f"**Suggested replacements (max {self.format_money(available_budget)}):**")
-                report.append("| Replacement | Team | Price | Form | xP | Fixtures |")
-                report.append("|-------------|------|-------|------|----|----------|")
-
-                for target in targets[:3]:
+                if target:
+                    report.append(f"- Net cost: {self.money(net_cost)}")
+                    report.append(f"- Transfer hit if no free transfer: {self.money(transfer_cost)}")
+                    report.append(f"- Value score: {value_score:.2f} xP per £m")
+                    report.append(f"- Target reason: form {target['form']:.1f}, xP {target['expected_points_next']:.1f}, fixtures {self.format_fixtures(target['upcoming_fixtures'])}")
+                    report.append("")
+                    report.append("| Out | In | Net cost | xP/£m | Notes |")
+                    report.append("|-----|----|----------|-------|-------|")
                     report.append(
-                        f"| {target['name']} | {target['team']} | {self.format_money(target['price'])} | "
-                        f"{target['form']:.1f} | {target['expected_points_next']:.1f} | {self.format_fixtures(target['upcoming_fixtures'])} |"
+                        f"| {player['name']} | {target['name']} | {self.money(net_cost)} | {value_score:.2f} | "
+                        f"{'Free transfer available' if free_transfers > 0 else 'Transfer hit applies'} |"
                     )
 
                 report.append("")
                 report.append("---")
                 report.append("")
 
-        report.append("## 🌟 Your Top Performers")
+        report.append("## 🌟 Top Performers")
         report.append("")
         report.append("| Player | Pos | Team | Form | xP | Fixtures |")
         report.append("|--------|-----|------|------|----|----------|")
-        top_players = sorted(current_team, key=lambda x: x['score'], reverse=True)[:5]
-        for player in top_players:
+        for player in sorted(current_team, key=lambda x: x['score'], reverse=True)[:5]:
             report.append(
                 f"| {player['name']} | {player['position']} | {player['team']} | {player['form']:.1f} | "
                 f"{player['expected_points_next']:.1f} | {self.format_fixtures(player['upcoming_fixtures'])} |"
             )
-
         report.append("")
 
         report.append("## 👑 Captain Recommendations")
         report.append("")
         captain_candidates = sorted(current_team, key=lambda x: x['expected_points_next'], reverse=True)[:3]
         for i, player in enumerate(captain_candidates, 1):
-            fixture_label = player['upcoming_fixtures'][0]['opponent'] if player['upcoming_fixtures'] else 'N/A'
-            report.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points | Next fixture: {fixture_label}")
+            next_fixture = player['upcoming_fixtures'][0]['opponent'] if player['upcoming_fixtures'] else 'N/A'
+            report.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points | Next fixture: {next_fixture}")
+        report.append("")
+
+        if free_transfers > 0:
+            report.append("## Transfer Strategy")
+            report.append("")
+            report.append(f"- You have {free_transfers} free transfer(s) available this GW.")
+            report.append("- Prioritize moves that improve xP without a transfer hit or with a small net cost.")
+            report.append("- If a player has poor fixtures or poor form, the best move is often a cheaper, higher-xP alternative in the same position.")
+        else:
+            report.append("## Transfer Strategy")
+            report.append("")
+            report.append("- No free transfers available this GW.")
+            report.append("- Favor low-net-cost moves and only do transfers that materially improve xP or fixture difficulty.")
+            report.append("- If the net cost is high, make sure the incoming player has stronger expected points and fixtures than the outgoing player.")
 
         return "\n".join(report)
 
@@ -380,9 +467,11 @@ def build_combined_report(team_ids):
         team_name = analyzer.team_data.get('name', f'Team {team_id}') if analyzer.team_data else f'Team {team_id}'
         value = (analyzer.team_data.get('last_deadline_value', 0) / 10.0) if analyzer.team_data else 0
         bank = (analyzer.team_data.get('last_deadline_bank', 0) / 10.0) if analyzer.team_data else 0
-        transfers_used = analyzer.team_picks.get('entry_history', {}).get('event_transfers', 0) if analyzer.team_picks else 0
+        free_transfers, transfers_used, _ = analyzer.get_free_transfers_available()
+        captain = sorted(analyzer.get_current_team(), key=lambda x: x['expected_points_next'], reverse=True)[:1]
+        captain_name = captain[0]['name'] if captain else 'N/A'
 
-        summary_rows.append(f"| {team_name} | {team_id} | {value:.1f}m | {bank:.1f}m | {transfers_used} |")
+        summary_rows.append(f"| {team_name} | {team_id} | {value:.1f}m | {bank:.1f}m | {free_transfers} | {transfers_used} | {captain_name} |")
         sections.append(report)
 
     summary = [
@@ -390,8 +479,8 @@ def build_combined_report(team_ids):
         f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         "## Team Overview",
-        "| Team | Team ID | Value | Bank | Transfers used |",
-        "|------|---------|-------|------|----------------|",
+        "| Team | Team ID | Value | Bank | Free transfers | Transfers used | Captain pick |",
+        "|------|---------|-------|------|----------------|----------------|--------------|",
     ]
     summary.extend(summary_rows)
     summary.extend(["", "---", ""])
