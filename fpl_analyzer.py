@@ -5,6 +5,7 @@ Analyzes FPL teams based on form, fixtures, expected points, price trends, and i
 Supports multiple teams in one report and produces markdown tables and Mermaid charts.
 """
 
+import html
 import os
 from datetime import datetime
 
@@ -132,8 +133,6 @@ class FPLAnalyzer:
         history = self.team_picks.get('entry_history', {}) if self.team_picks else {}
         transfers_used = int(history.get('event_transfers', 0) or 0)
         transfer_cost = int(history.get('event_transfers_cost', 0) or 0)
-
-        # Standard FPL logic: the first transfer is usually free each GW.
         free_transfers = max(0, 1 - transfers_used)
         if free_transfers == 0 and transfer_cost == 0 and transfers_used == 0:
             free_transfers = 1
@@ -263,23 +262,19 @@ class FPLAnalyzer:
         best = ranked[0]
         return best
 
-    def generate_recommendations(self):
-        """Generate transfer recommendations and a markdown report."""
-        print("Fetching FPL data...")
+    def generate_markdown_report(self):
+        """Generate the markdown issue body."""
         self.fetch_bootstrap_data()
         self.fetch_team_data()
         self.fetch_fixtures()
-
-        print(f"Analyzing team: {self.team_data['name']}")
-        print(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
-        print(f"Team ID: {self.team_id}")
 
         current_team = self.get_current_team()
         current_team.sort(key=lambda x: x['score'])
         free_transfers, transfers_used, transfer_cost = self.get_free_transfers_available()
 
         risk_counts = {'Low': 0, 'Medium': 0, 'High': 0}
-        top_captains = []
+        captain_candidates = sorted(current_team, key=lambda x: x['expected_points_next'], reverse=True)[:3]
+
         for player in current_team:
             if player['availability'] != 'a' or (player['chance_of_playing'] and player['chance_of_playing'] < 75):
                 risk = 'High'
@@ -289,53 +284,49 @@ class FPLAnalyzer:
                 risk = 'Low'
             risk_counts[risk] += 1
 
-        for player in sorted(current_team, key=lambda x: x['expected_points_next'], reverse=True)[:3]:
-            top_captains.append(player)
-
-        report = []
-        report.append(f"# FPL WEEKLY ANALYSIS REPORT - {self.team_data['name']}")
-        report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        report.append(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
-        report.append(f"Team: {self.team_data['name']}")
-        report.append(f"Team ID: {self.team_id}")
-        report.append("")
-
-        report.append("## Summary")
-        report.append("")
-        report.append("| Team | Value | Bank | Free transfers | Transfers used | Captain pick |")
-        report.append("|------|-------|------|----------------|----------------|--------------|")
-        report.append(
+        lines = []
+        lines.append(f"# FPL WEEKLY ANALYSIS REPORT - {self.team_data['name']}")
+        lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"Manager: {self.team_data['player_first_name']} {self.team_data['player_last_name']}")
+        lines.append(f"Team: {self.team_data['name']}")
+        lines.append(f"Team ID: {self.team_id}")
+        lines.append("")
+        lines.append("## Summary")
+        lines.append("")
+        lines.append("| Team | Value | Bank | Free transfers | Transfers used | Captain pick |")
+        lines.append("|------|-------|------|----------------|----------------|--------------|")
+        lines.append(
             f"| {self.team_data['name']} | {self.money(self.team_data.get('last_deadline_value', 0) / 10.0)} | "
-            f"{self.money(self.team_data.get('last_deadline_bank', 0) / 10.0)} | {free_transfers} | "
-            f"{transfers_used} | {top_captains[0]['name'] if top_captains else 'N/A'} |"
+            f"{self.money(self.team_data.get('last_deadline_bank', 0) / 10.0)} | {free_transfers} | {transfers_used} | "
+            f"{captain_candidates[0]['name'] if captain_candidates else 'N/A'} |"
         )
-        report.append("")
+        lines.append("")
 
-        report.append("## Risk Snapshot")
-        report.append("")
-        report.append("```mermaid")
-        report.append("pie title Team Risk Distribution")
-        report.append(f"    \"Low\" : {risk_counts['Low']}")
-        report.append(f"    \"Medium\" : {risk_counts['Medium']}")
-        report.append(f"    \"High\" : {risk_counts['High']}")
-        report.append("```")
-        report.append("")
+        lines.append("## Risk Snapshot")
+        lines.append("")
+        lines.append("```mermaid")
+        lines.append("pie title Team Risk Distribution")
+        lines.append(f"    \"Low\" : {risk_counts['Low']}")
+        lines.append(f"    \"Medium\" : {risk_counts['Medium']}")
+        lines.append(f"    \"High\" : {risk_counts['High']}")
+        lines.append("```")
+        lines.append("")
 
-        report.append("## Captaincy Comparison")
-        report.append("")
-        report.append("```mermaid")
-        report.append("xychart-beta")
-        report.append("    title Expected Points Next GW")
-        report.append("    x-axis [" + ", ".join([p['name'] for p in top_captains]) + "]")
-        report.append("    y-axis \"Expected xP\" 0 --> 12")
-        report.append("    bar [" + ", ".join([f"{p['expected_points_next']:.1f}" for p in top_captains]) + "]")
-        report.append("```")
-        report.append("")
+        lines.append("## Captaincy Comparison")
+        lines.append("")
+        lines.append("```mermaid")
+        lines.append("xychart-beta")
+        lines.append("    title Expected Points Next GW")
+        lines.append("    x-axis [" + ", ".join([p['name'] for p in captain_candidates]) + "]")
+        lines.append("    y-axis \"Expected xP\" 0 --> 12")
+        lines.append("    bar [" + ", ".join([f\"{p['expected_points_next']:.1f}\" for p in captain_candidates]) + "]")
+        lines.append("```")
+        lines.append("")
 
-        report.append("## Risk Table")
-        report.append("")
-        report.append("| Player | Pos | Form | xP | FDR | Risk | Cost |")
-        report.append("|--------|-----|------|----|-----|------|------|")
+        lines.append("## Risk Table")
+        lines.append("")
+        lines.append("| Player | Pos | Form | xP | FDR | Risk | Cost |")
+        lines.append("|--------|-----|------|----|-----|------|------|")
         for player in current_team[:8]:
             if player['availability'] != 'a' or (player['chance_of_playing'] and player['chance_of_playing'] < 75):
                 risk = 'High'
@@ -343,14 +334,14 @@ class FPLAnalyzer:
                 risk = 'Medium'
             else:
                 risk = 'Low'
-            report.append(
+            lines.append(
                 f"| {player['name']} | {player['position']} | {player['form']:.1f} {self.mini_bar(player['form'], max_value=10, width=8)} | "
                 f"{player['expected_points_next']:.1f} | {player['avg_fixture_difficulty']:.1f} | {risk} | {self.money(player['price'])} |"
             )
-        report.append("")
+        lines.append("")
 
-        report.append("## ⚠️ Players to Consider Transferring Out")
-        report.append("")
+        lines.append("## ⚠️ Players to Consider Transferring Out")
+        lines.append("")
         problem_players = []
         for player in current_team[:5]:
             issues = []
@@ -368,8 +359,8 @@ class FPLAnalyzer:
                 problem_players.append((player, issues))
 
         if not problem_players:
-            report.append("✅ No immediate concerns with your team!")
-            report.append("")
+            lines.append("✅ No immediate concerns with your team!")
+            lines.append("")
         else:
             for player, issues in problem_players:
                 transfer_pick = self.build_transfer_recommendation(player, free_transfers)
@@ -378,77 +369,105 @@ class FPLAnalyzer:
                 transfer_cost = transfer_pick['transfer_cost'] if transfer_pick else 0
                 value_score = transfer_pick['value_score'] if transfer_pick else 0
 
-                report.append(f"### {player['name']} ({player['position']}) - {player['team']} - {self.money(player['price'])}")
+                lines.append(f"### {player['name']} ({player['position']}) - {player['team']} - {self.money(player['price'])}")
                 for issue in issues:
-                    report.append(f"- {issue}")
-                report.append(f"- Next 3 fixtures: {self.format_fixtures(player['upcoming_fixtures'])}")
-                report.append(f"- Free transfers available: {free_transfers}")
-                report.append(f"- Suggested move: {player['name']} OUT -> {target['name']} IN") if target else report.append("- Suggested move: no suitable replacement in budget")
-
+                    lines.append(f"- {issue}")
+                lines.append(f"- Next 3 fixtures: {self.format_fixtures(player['upcoming_fixtures'])}")
+                lines.append(f"- Free transfers available: {free_transfers}")
                 if target:
-                    report.append(f"- Net cost: {self.money(net_cost)}")
-                    report.append(f"- Transfer hit if no free transfer: {self.money(transfer_cost)}")
-                    report.append(f"- Value score: {value_score:.2f} xP per £m")
-                    report.append(f"- Target reason: form {target['form']:.1f}, xP {target['expected_points_next']:.1f}, fixtures {self.format_fixtures(target['upcoming_fixtures'])}")
-                    report.append("")
-                    report.append("| Out | In | Net cost | xP/£m | Notes |")
-                    report.append("|-----|----|----------|-------|-------|")
-                    report.append(
+                    lines.append(f"- Suggested move: {player['name']} OUT -> {target['name']} IN")
+                    lines.append(f"- Net cost: {self.money(net_cost)}")
+                    lines.append(f"- Transfer hit if no free transfer: {self.money(transfer_cost)}")
+                    lines.append(f"- Value score: {value_score:.2f} xP per £m")
+                    lines.append(f"- Target reason: form {target['form']:.1f}, xP {target['expected_points_next']:.1f}, fixtures {self.format_fixtures(target['upcoming_fixtures'])}")
+                    lines.append("")
+                    lines.append("| Out | In | Net cost | xP/£m | Notes |")
+                    lines.append("|-----|----|----------|-------|-------|")
+                    lines.append(
                         f"| {player['name']} | {target['name']} | {self.money(net_cost)} | {value_score:.2f} | "
                         f"{'Free transfer available' if free_transfers > 0 else 'Transfer hit applies'} |"
                     )
+                else:
+                    lines.append("- Suggested move: no suitable replacement in budget")
+                lines.append("")
+                lines.append("---")
+                lines.append("")
 
-                report.append("")
-                report.append("---")
-                report.append("")
-
-        report.append("## 🌟 Top Performers")
-        report.append("")
-        report.append("| Player | Pos | Team | Form | xP | Fixtures |")
-        report.append("|--------|-----|------|------|----|----------|")
+        lines.append("## 🌟 Top Performers")
+        lines.append("")
+        lines.append("| Player | Pos | Team | Form | xP | Fixtures |")
+        lines.append("|--------|-----|------|------|----|----------|")
         for player in sorted(current_team, key=lambda x: x['score'], reverse=True)[:5]:
-            report.append(
+            lines.append(
                 f"| {player['name']} | {player['position']} | {player['team']} | {player['form']:.1f} | "
                 f"{player['expected_points_next']:.1f} | {self.format_fixtures(player['upcoming_fixtures'])} |"
             )
-        report.append("")
+        lines.append("")
 
-        report.append("## 👑 Captain Recommendations")
-        report.append("")
-        captain_candidates = sorted(current_team, key=lambda x: x['expected_points_next'], reverse=True)[:3]
+        lines.append("## 👑 Captain Recommendations")
+        lines.append("")
         for i, player in enumerate(captain_candidates, 1):
             next_fixture = player['upcoming_fixtures'][0]['opponent'] if player['upcoming_fixtures'] else 'N/A'
-            report.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points | Next fixture: {next_fixture}")
-        report.append("")
+            lines.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points | Next fixture: {next_fixture}")
+        lines.append("")
 
         if free_transfers > 0:
-            report.append("## Transfer Strategy")
-            report.append("")
-            report.append(f"- You have {free_transfers} free transfer(s) available this GW.")
-            report.append("- Prioritize moves that improve xP without a transfer hit or with a small net cost.")
-            report.append("- If a player has poor fixtures or poor form, the best move is often a cheaper, higher-xP alternative in the same position.")
+            lines.append("## Transfer Strategy")
+            lines.append("")
+            lines.append(f"- You have {free_transfers} free transfer(s) available this GW.")
+            lines.append("- Prioritize moves that improve xP without a transfer hit or with a small net cost.")
+            lines.append("- If a player has poor fixtures or poor form, the best move is often a cheaper, higher-xP alternative in the same position.")
         else:
-            report.append("## Transfer Strategy")
-            report.append("")
-            report.append("- No free transfers available this GW.")
-            report.append("- Favor low-net-cost moves and only do transfers that materially improve xP or fixture difficulty.")
-            report.append("- If the net cost is high, make sure the incoming player has stronger expected points and fixtures than the outgoing player.")
+            lines.append("## Transfer Strategy")
+            lines.append("")
+            lines.append("- No free transfers available this GW.")
+            lines.append("- Favor low-net-cost moves and only do transfers that materially improve xP or fixture difficulty.")
+            lines.append("- If the net cost is high, make sure the incoming player has stronger expected points and fixtures than the outgoing player.")
 
-        return "\n".join(report)
+        return "\n".join(lines)
+
+    def generate_html_report(self, markdown_text):
+        """Create a simple styled HTML artifact from the markdown text."""
+        escaped = html.escape(markdown_text)
+        html_body = """
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>FPL Weekly Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; background: #0d1117; color: #e6edf3; margin: 0; padding: 32px; }
+            .container { max-width: 1100px; margin: 0 auto; }
+            .box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 24px; }
+            h1, h2, h3 { color: #f0f6fc; }
+            table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; }
+            th, td { border: 1px solid #30363d; padding: 10px 12px; text-align: left; }
+            th { background: #21262d; }
+            code, pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; overflow: auto; }
+            a { color: #58a6ff; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="box">
+              <pre>{content}</pre>
+            </div>
+          </div>
+        </body>
+        </html>
+        """.replace('{content}', escaped)
+        return html_body
 
 
 def get_team_ids_from_env():
     """Support both a single legacy FPL_TEAM_ID and a comma-separated FPL_TEAM_IDS list."""
     team_ids = []
-
     multi = os.environ.get('FPL_TEAM_IDS', '').strip()
     if multi:
         team_ids.extend([team_id.strip() for team_id in multi.split(',') if team_id.strip()])
-
     legacy = os.environ.get('FPL_TEAM_ID', '').strip()
     if legacy and legacy not in team_ids:
         team_ids.append(legacy)
-
     return team_ids
 
 
@@ -462,7 +481,7 @@ def build_combined_report(team_ids):
         analyzer.fetch_bootstrap_data()
         analyzer.fetch_team_data()
         analyzer.fetch_fixtures()
-        report = analyzer.generate_recommendations()
+        report = analyzer.generate_markdown_report()
 
         team_name = analyzer.team_data.get('name', f'Team {team_id}') if analyzer.team_data else f'Team {team_id}'
         value = (analyzer.team_data.get('last_deadline_value', 0) / 10.0) if analyzer.team_data else 0
@@ -498,16 +517,20 @@ def main():
     try:
         if len(team_ids) == 1:
             analyzer = FPLAnalyzer(team_ids[0])
-            report = analyzer.generate_recommendations()
+            markdown_report = analyzer.generate_markdown_report()
         else:
-            report = build_combined_report(team_ids)
+            markdown_report = build_combined_report(team_ids)
 
-        with open('fpl_report.md', 'w') as f:
-            f.write(report)
+        with open('fpl_report.md', 'w', encoding='utf-8') as f:
+            f.write(markdown_report)
+
+        html_report = FPLAnalyzer(team_ids[0]).generate_html_report(markdown_report) if len(team_ids) == 1 else "<html><body><pre>" + html.escape(markdown_report) + "</pre></body></html>"
+        with open('fpl_report.html', 'w', encoding='utf-8') as f:
+            f.write(html_report)
 
         print("Report generated successfully!")
         print("\n" + "=" * 50)
-        print(report)
+        print(markdown_report)
 
     except Exception as e:
         print(f"Error: {e}")
