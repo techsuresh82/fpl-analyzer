@@ -2,7 +2,7 @@
 """
 FPL Team Analyzer - Weekly Transfer Recommendations
 Analyzes FPL teams based on form, fixtures, expected points, price trends, and injuries.
-Supports multiple teams in one report and produces markdown tables and Mermaid charts.
+Supports multiple teams and generates markdown + HTML reports for GitHub issues and artifacts.
 """
 
 import html
@@ -259,8 +259,7 @@ class FPLAnalyzer:
             })
 
         ranked.sort(key=lambda x: x['total_score'], reverse=True)
-        best = ranked[0]
-        return best
+        return ranked[0] if ranked else None
 
     def generate_markdown_report(self):
         """Generate the markdown issue body."""
@@ -317,9 +316,11 @@ class FPLAnalyzer:
         lines.append("```mermaid")
         lines.append("xychart-beta")
         lines.append("    title Expected Points Next GW")
-        lines.append("    x-axis [" + ", ".join([p['name'] for p in captain_candidates]) + "]")
+        captain_names = ", ".join(p['name'] for p in captain_candidates)
+        captain_xp = ", ".join(f"{p['expected_points_next']:.1f}" for p in captain_candidates)
+        lines.append(f"    x-axis [{captain_names}]")
         lines.append("    y-axis \"Expected xP\" 0 --> 12")
-        lines.append("    bar [" + ", ".join([f\"{p['expected_points_next']:.1f}\" for p in captain_candidates]) + "]")
+        lines.append(f"    bar [{captain_xp}]")
         lines.append("```")
         lines.append("")
 
@@ -430,31 +431,31 @@ class FPLAnalyzer:
         """Create a simple styled HTML artifact from the markdown text."""
         escaped = html.escape(markdown_text)
         html_body = """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <title>FPL Weekly Report</title>
-          <style>
-            body { font-family: Arial, sans-serif; background: #0d1117; color: #e6edf3; margin: 0; padding: 32px; }
-            .container { max-width: 1100px; margin: 0 auto; }
-            .box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 24px; }
-            h1, h2, h3 { color: #f0f6fc; }
-            table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; }
-            th, td { border: 1px solid #30363d; padding: 10px 12px; text-align: left; }
-            th { background: #21262d; }
-            code, pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; overflow: auto; }
-            a { color: #58a6ff; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="box">
-              <pre>{content}</pre>
-            </div>
-          </div>
-        </body>
-        </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FPL Weekly Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0d1117; color: #e6edf3; margin: 0; padding: 32px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 24px; }
+    h1, h2, h3 { color: #f0f6fc; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; }
+    th, td { border: 1px solid #30363d; padding: 10px 12px; text-align: left; }
+    th { background: #21262d; }
+    code, pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 12px; overflow: auto; }
+    a { color: #58a6ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="box">
+      <pre>{content}</pre>
+    </div>
+  </div>
+</body>
+</html>
         """.replace('{content}', escaped)
         return html_body
 
@@ -518,13 +519,14 @@ def main():
         if len(team_ids) == 1:
             analyzer = FPLAnalyzer(team_ids[0])
             markdown_report = analyzer.generate_markdown_report()
+            html_report = analyzer.generate_html_report(markdown_report)
         else:
             markdown_report = build_combined_report(team_ids)
+            html_report = "<html><body><pre>" + html.escape(markdown_report) + "</pre></body></html>"
 
         with open('fpl_report.md', 'w', encoding='utf-8') as f:
             f.write(markdown_report)
 
-        html_report = FPLAnalyzer(team_ids[0]).generate_html_report(markdown_report) if len(team_ids) == 1 else "<html><body><pre>" + html.escape(markdown_report) + "</pre></body></html>"
         with open('fpl_report.html', 'w', encoding='utf-8') as f:
             f.write(html_report)
 
