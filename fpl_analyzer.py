@@ -412,6 +412,39 @@ class FPLAnalyzer:
             lines.append(f"{i}. **{player['name']}** - Expected: {player['expected_points_next']:.1f} points | Next fixture: {next_fixture}")
         lines.append("")
 
+        if free_transfers == 1:
+            best_single_transfer = None
+            best_score = -999999
+
+            for player in current_team[:5]:
+                rec = self.build_transfer_recommendation(player, free_transfers)
+                if not rec:
+                    continue
+                target = rec['target']
+                score = rec['total_score']
+                if score > best_score:
+                    best_score = score
+                    best_single_transfer = {
+                        'out_player': player['name'],
+                        'out_position': player['position'],
+                        'in_player': target['name'],
+                        'in_position': target['position'],
+                        'net_cost': rec['net_cost'],
+                        'transfer_hit': rec['transfer_cost'],
+                        'value_score': rec['value_score'],
+                    }
+
+            if best_single_transfer:
+                lines.append("## Best Single Transfer")
+                lines.append("")
+                lines.append(f"- OUT: {best_single_transfer['out_player']} ({best_single_transfer['out_position']})")
+                lines.append(f"- IN: {best_single_transfer['in_player']} ({best_single_transfer['in_position']})")
+                lines.append(f"- Net cost: {self.money(best_single_transfer['net_cost'])}")
+                lines.append(f"- Estimated transfer hit: {self.money(best_single_transfer['transfer_hit'])}")
+                lines.append(f"- Value score: {best_single_transfer['value_score']:.2f} xP per £m")
+                lines.append("- Reason: best low-risk, high-value move under your current transfer constraints")
+                lines.append("")
+
         if free_transfers > 0:
             lines.append("## Transfer Strategy")
             lines.append("")
