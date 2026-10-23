@@ -1,5 +1,5 @@
 # FPL WEEKLY ANALYSIS REPORT
-Generated: 2026-10-22 17:54:49
+Generated: 2026-10-23 14:00:01
 
 ## Team Overview
 | Team | Team ID | Value | Bank | Free transfers | Transfers used | Captain pick |
@@ -11,7 +11,7 @@ Generated: 2026-10-22 17:54:49
 ---
 
 # FPL WEEKLY ANALYSIS REPORT - Suresh's Invincibles
-Generated: 2026-10-22 17:54:47
+Generated: 2026-10-23 14:00:00
 Manager: Suresh K
 Team: Suresh's Invincibles
 Team ID: 7100718
@@ -46,8 +46,8 @@ xychart-beta
 | Player | Pos | Form | xP | FDR | Risk | Cost |
 |--------|-----|------|----|-----|------|------|
 | Lecomte | GK | 0.0 ░░░░░░░░ | 0.0 | 3.2 | Medium | £4.0m |
-| Saka | MID | 2.5 ██░░░░░░ | 1.2 | 3.2 | High | £9.6m |
 | Semenyo | MID | 2.0 █░░░░░░░ | 0.0 | 3.2 | High | £8.3m |
+| Saka | MID | 2.5 ██░░░░░░ | 0.0 | 3.2 | High | £9.6m |
 | George | MID | 1.0 ░░░░░░░░ | 1.0 | 3.4 | Medium | £5.5m |
 | Wissa | FWD | 1.5 █░░░░░░░ | 1.5 | 3.4 | Medium | £6.1m |
 | B.Fernandes | MID | 1.0 ░░░░░░░░ | 1.0 | 3.4 | Medium | £11.8m |
@@ -73,25 +73,6 @@ xychart-beta
 
 ---
 
-### Saka (MID) - Arsenal - £9.6m
-- **INJURED/UNAVAILABLE** - Thigh injury - 50% chance of playing
-- Doubt for next match (50% chance)
-- Poor form (2.5)
-- Low expected points (1.2)
-- Next 3 fixtures: Everton(H, FDR:3), Liverpool(A, FDR:4), Hull City(H, FDR:2)
-- Free transfers available: 0
-- Suggested move: Saka OUT -> Henderson IN
-- Net cost: £-4.7m
-- Transfer hit if no free transfer: £0.0m
-- Value score: 2.14 xP per £m
-- Target reason: form 10.5, xP 10.5, fixtures Spurs(H, FDR:2), Man Utd(H, FDR:4), Sunderland(A, FDR:3)
-
-| Out | In | Net cost | xP/£m | Notes |
-|-----|----|----------|-------|-------|
-| Saka | Henderson | £-4.7m | 2.14 | Transfer hit applies |
-
----
-
 ### Semenyo (MID) - Man City - £8.3m
 - **INJURED/UNAVAILABLE** - Knee injury - Unknown return date
 - Poor form (2.0)
@@ -107,6 +88,24 @@ xychart-beta
 | Out | In | Net cost | xP/£m | Notes |
 |-----|----|----------|-------|-------|
 | Semenyo | Henderson | £-3.4m | 2.14 | Transfer hit applies |
+
+---
+
+### Saka (MID) - Arsenal - £9.6m
+- **INJURED/UNAVAILABLE** - Thigh injury - Unknown return date
+- Poor form (2.5)
+- Low expected points (0.0)
+- Next 3 fixtures: Everton(H, FDR:3), Liverpool(A, FDR:4), Hull City(H, FDR:2)
+- Free transfers available: 0
+- Suggested move: Saka OUT -> Henderson IN
+- Net cost: £-4.7m
+- Transfer hit if no free transfer: £0.0m
+- Value score: 2.14 xP per £m
+- Target reason: form 10.5, xP 10.5, fixtures Spurs(H, FDR:2), Man Utd(H, FDR:4), Sunderland(A, FDR:3)
+
+| Out | In | Net cost | xP/£m | Notes |
+|-----|----|----------|-------|-------|
+| Saka | Henderson | £-4.7m | 2.14 | Transfer hit applies |
 
 ---
 
@@ -166,7 +165,7 @@ xychart-beta
 - Favor low-net-cost moves and only do transfers that materially improve xP or fixture difficulty.
 - If the net cost is high, make sure the incoming player has stronger expected points and fixtures than the outgoing player.
 # FPL WEEKLY ANALYSIS REPORT - Frogs FC
-Generated: 2026-10-22 17:54:48
+Generated: 2026-10-23 14:00:00
 Manager: Sanvika Suresh
 Team: Frogs FC
 Team ID: 7194103
@@ -181,9 +180,9 @@ Team ID: 7194103
 
 ```mermaid
 pie title Team Risk Distribution
-    "Low" : 8
+    "Low" : 7
     "Medium" : 6
-    "High" : 1
+    "High" : 2
 ```
 
 ## Captaincy Comparison
@@ -202,12 +201,12 @@ xychart-beta
 |--------|-----|------|----|-----|------|------|
 | Fernandes | MID | 1.0 ░░░░░░░░ | 1.0 | 2.8 | Medium | £5.7m |
 | Kayode | DEF | 0.5 ░░░░░░░░ | 0.5 | 3.2 | Medium | £4.6m |
+| Calvert-Lewin | FWD | 5.5 ████░░░░ | 2.8 | 2.8 | High | £6.1m |
 | Martinez | GK | 5.5 ████░░░░ | 0.0 | 3.0 | High | £5.0m |
 | Gibbs-White | MID | 1.0 ░░░░░░░░ | 1.0 | 3.2 | Medium | £7.9m |
 | Diop | DEF | 2.5 ██░░░░░░ | 2.5 | 2.8 | Medium | £3.9m |
 | Branthwaite | DEF | 2.0 █░░░░░░░ | 2.0 | 3.4 | Medium | £5.5m |
 | Tzolakis | GK | 2.5 ██░░░░░░ | 2.5 | 3.2 | Medium | £4.7m |
-| Castagne | DEF | 4.0 ███░░░░░ | 4.0 | 3.2 | Low | £4.5m |
 
 ## ⚠️ Players to Consider Transferring Out
 
@@ -245,6 +244,23 @@ xychart-beta
 
 ---
 
+### Calvert-Lewin (FWD) - Leeds - £6.1m
+- **INJURED/UNAVAILABLE** - Foot injury - 50% chance of playing
+- Doubt for next match (50% chance)
+- Next 3 fixtures: Sunderland(A, FDR:3), Bournemouth(A, FDR:3), Spurs(H, FDR:2)
+- Free transfers available: 1
+- Suggested move: Calvert-Lewin OUT -> Evanilson IN
+- Net cost: £0.0m
+- Transfer hit if no free transfer: £0.0m
+- Value score: 1.56 xP per £m
+- Target reason: form 9.5, xP 9.5, fixtures Man Utd(A, FDR:4), Leeds(H, FDR:3), Ipswich Town(A, FDR:2)
+
+| Out | In | Net cost | xP/£m | Notes |
+|-----|----|----------|-------|-------|
+| Calvert-Lewin | Evanilson | £0.0m | 1.56 | Free transfer available |
+
+---
+
 ### Martinez (GK) - Chelsea - £5.0m
 - **INJURED/UNAVAILABLE** - Head injury - Unknown return date
 - Low expected points (0.0)
@@ -279,22 +295,6 @@ xychart-beta
 
 ---
 
-### Diop (DEF) - Ipswich Town - £3.9m
-- Poor form (2.5)
-- Next 3 fixtures: Nott'm Forest(H, FDR:3), Hull City(A, FDR:2), Bournemouth(H, FDR:3)
-- Free transfers available: 1
-- Suggested move: Diop OUT -> Davies IN
-- Net cost: £0.0m
-- Transfer hit if no free transfer: £0.0m
-- Value score: 0.90 xP per £m
-- Target reason: form 3.5, xP 3.5, fixtures Chelsea(A, FDR:4), Crystal Palace(H, FDR:2), Leeds(A, FDR:3)
-
-| Out | In | Net cost | xP/£m | Notes |
-|-----|----|----------|-------|-------|
-| Diop | Davies | £0.0m | 0.90 | Free transfer available |
-
----
-
 ## 🌟 Top Performers
 
 | Player | Pos | Team | Form | xP | Fixtures |
@@ -326,7 +326,7 @@ xychart-beta
 - Prioritize moves that improve xP without a transfer hit or with a small net cost.
 - If a player has poor fixtures or poor form, the best move is often a cheaper, higher-xP alternative in the same position.
 # FPL WEEKLY ANALYSIS REPORT - ro$a parks the buss
-Generated: 2026-10-22 17:54:49
+Generated: 2026-10-23 14:00:01
 Manager: Mikhail Leo
 Team: ro$a parks the buss
 Team ID: 8176746
